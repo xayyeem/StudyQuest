@@ -55,10 +55,24 @@ exports.deleteAccount = async (req, res) => {
             msg: 'Account deleted successfully',
             success: true,
         })
+        // TODO  //  HW unenrolled se delete
     } catch (error) {
         return res.status(500).json({ msg: error.message, success: false })
     }
 }
 
 
-    // TODO  //  HW unenrolled se delete
+exports.getAllProfile = async (req, res) => {
+    try {
+        const id = req.user.id
+        const userDetails = await user.findById(id).populate('additionalDetails').exec()
+        res.status(200).json({
+            msg: 'Profile fetched successfully',
+            success: true,
+        })
+    } catch (error) {
+        return res.status(500).json({ msg: error.message, success: false })
+    }
+}
+
+// tags ko change karna hai category mai
