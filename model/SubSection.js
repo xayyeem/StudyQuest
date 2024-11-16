@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const validator = require('validator')
+
 const SubSectionSchema = mongoose.Schema({
     title: {
         type: String,
@@ -7,10 +7,10 @@ const SubSectionSchema = mongoose.Schema({
     timeDuration: {
         type: String
     },
-    description:{
-        type:String
+    description: {
+        type: String
     },
-    videoUrl:{
+    videoUrl: {
         type: String,
     }
 })

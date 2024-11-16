@@ -3,6 +3,7 @@ const validator = require('validator');
 const profileSchema = mongoose.Schema({
     gender: {
         type: String,
+        required: true,
         enum: ['Male', 'Female', 'Other'],
         validate(value) {
             if (!['Male', 'Female', 'Other'].includes(value)) {
@@ -25,6 +26,7 @@ const profileSchema = mongoose.Schema({
     },
     contactNo: {
         type: String,
+        required: true,
         validate(value) {
             if (!validator.isMobilePhone(value)) {
                 throw new Error('Invalid contact number. Must be a valid mobile phone number')
