@@ -1,5 +1,5 @@
 const Course = require('../model/Course')
-const Tag = require('../model/Tag')
+const Categories = require('../model/Categories')
 const user = require('../model/user')
 const { uploadImageToCloudinary } = require('../utils/imageUpload')
 
@@ -69,6 +69,39 @@ exports.showAllCourses = async (req, res) => {
             success: true,
             data: allCourses
         })
+    } catch (error) {
+        res.status(500).json({ message: error.message, success: false })
+    }
+}
+
+// get course details
+
+exports.getCourseDetails = async (req, res) => {
+    try {
+        // fetch course details
+        const { courseId } = req.body
+        // find course details using populate
+        const courseDetails = await Course.findById(courseId).populate({
+            path: 'instructor',
+            populate: {
+                path: 'additionalDetails'
+            }
+        }).populate('Categories').populate('RatingAndReview').populate({
+            path: 'courseContent',
+            populate: {
+                path: 'SubSection'
+            }
+        }).exec()
+        // validations 
+        if (!courseDetails) {
+            return res.status(404).json({ message: 'Course not found', success: false })
+        }
+        return res.status(200).json({
+            message: 'Course details retrieved successfully',
+            success: true,
+            data: courseDetails
+        })
+        // return res
     } catch (error) {
         res.status(500).json({ message: error.message, success: false })
     }

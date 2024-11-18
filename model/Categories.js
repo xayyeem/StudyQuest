@@ -1,6 +1,5 @@
 const mongoose = require('mongoose')
-const validator = require('validator')
-const tagsSchema = mongoose.Schema({
+const categoriesSchema = mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -11,7 +10,7 @@ const tagsSchema = mongoose.Schema({
         required: true,
         trim: true
     },
-    course: [{
+    courses: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Course'
     }]
@@ -19,4 +18,4 @@ const tagsSchema = mongoose.Schema({
 })
 
 
-module.exports = mongoose.model('Tag', tagsSchema)
+module.exports = mongoose.model('Categories', categoriesSchema)

@@ -1,7 +1,11 @@
 const mongoose = require('mongoose')
-const validator = require('validator')
 const CourseSchema = mongoose.Schema({
-    
+
+    instructor: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    },
     courseName: {
         type: String,
         required: true,
@@ -35,7 +39,7 @@ const CourseSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Review'
     }],
-    
+
     price: {
         type: Number,
 
@@ -45,16 +49,27 @@ const CourseSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    tag: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Tag'
+    tags: {
+        type: [String],
+        required: true
     },
-    
+    categories: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Categories'
+    },
+
     studentsEnrolled: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
-    }]
+    }],
+    instruction: {
+        type: [String]
+    },
+    status: {
+        type: String,
+        enum: ['Draft', 'Published'],
+    }
 
 })
 
