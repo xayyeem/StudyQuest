@@ -5,6 +5,7 @@ const {
     deleteAccount,
     updateProfile,
     getAllProfile,
+    updateDisplayPicture
 } = require("../controller/Profle"); // Corrected path
 
 // ********************************************************************************************************
@@ -14,5 +15,6 @@ const {
 router.delete("/deleteProfile", auth, deleteAccount);
 router.put("/updateProfile", auth, updateProfile);
 router.get("/getUserDetails", auth, getAllProfile);
+router.put("/updateDisplayPicture", auth, updateDisplayPicture)
 
 module.exports = router;

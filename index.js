@@ -41,7 +41,7 @@ cloudConnect();
 app.use('/api/v1/auth', UserRoutes);
 app.use('/api/v1/payment', PaymentRoutes);
 app.use('/api/v1/courses', CourseRoutes);
-app.use('/api/1/profile', ProfileRoutes);
+app.use('/api/v1/profile', ProfileRoutes);
 
 // Root route
 app.get('/', (req, res) => {
