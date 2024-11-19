@@ -12,7 +12,7 @@ exports.createCategories = async (req, res) => {
             })
         }
         // create tag entry in db
-        const tagDetails = await Tag.create({
+        const tagDetails = await Categories.create({
             name,
             description
         })
@@ -34,12 +34,12 @@ exports.createCategories = async (req, res) => {
 
 exports.showAllCategories = async (req, res) => {
     try {
-        const allCategories = await Tag.find({}, {
+        const allCategories = await Categories.find({}, {
             name: true, description: true
         })
         res.status(200).json({
             message: 'Tags successfully returned',
-            data: allTags,
+            data: allCategories,
             success: true
         })
     } catch (error) {
