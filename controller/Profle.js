@@ -8,10 +8,10 @@ exports.updateProfile = async (req, res) => {
         const { dateOfBirth = "", about = "", contactNo, gender } = req.body
         // get userid
         const id = req.user.id
-        // validations
-        if (!contactNo || !gender || !id) {
-            return res.status(400).json({ msg: 'Invalid Request', success: false })
-        }
+        // // validations
+        // if (!contactNo || !gender) {
+        //     return res.status(400).json({ msg: 'Invalid Request', success: false })
+        // }
         // find profile
         const userDetails = await user.findById(id)
         const profileId = userDetails.additionalDetails
