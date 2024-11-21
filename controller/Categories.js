@@ -1,84 +1,124 @@
-const Categories = require('../model/Categories')
-
-exports.createCategories = async (req, res) => {
-    try {
-        // fetch data from req body
-        const { name, description } = req.body
-        // validation
-        if (!name || !description) {
-            return res.status(400).json({
-                message: 'Name and description are required',
-                success: false
-            })
-        }
-        // create tag entry in db
-        const tagDetails = await Categories.create({
-            name,
-            description
-        })
-        // return res
-        res.status(200).json({
-            message: 'Tag created successfully',
-            data: tagDetails,
-            success: true
-        })
-    } catch (error) {
-        res.status(500).json({
-            message: error.message
-
-        })
-    }
+const mongoose = require("mongoose");
+const categories = require("../model/Categories");
+function getRandomInt(max) {
+    return Math.floor(Math.random() * max)
 }
 
-// getAllTags
+exports.createCategory = async (req, res) => {
+    try {
+        const { name, description } = req.body;
+        if (!name) {
+            return res
+                .status(400)
+                .json({ success: false, message: "All fields are required" });
+        }
+        const CategorysDetails = await categories.create({
+            name: name,
+            description: description,
+        });
+        console.log(CategorysDetails);
+        return res.status(200).json({
+            success: true,
+            message: "Categorys Created Successfully",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: true,
+            message: error.message,
+        });
+    }
+};
 
 exports.showAllCategories = async (req, res) => {
     try {
-        const allCategories = await Categories.find({}, {
-            name: true, description: true
-        })
+        console.log("INSIDE SHOW ALL CATEGORIES");
+        const allCategorys = await categories.find({});
         res.status(200).json({
-            message: 'Tags successfully returned',
-            data: allCategories,
-            success: true
-        })
+            success: true,
+            data: allCategorys,
+        });
     } catch (error) {
-        res.status(500).json({
-            message: error.message
-
-        })
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
     }
-}
+};
 
-// catagory page details
+//categoryPageDetails 
 
-exports.catageryPageDetails = async (req, res) => {
+exports.categoryPageDetails = async (req, res) => {
     try {
-        // get courses for spcific couse id
         const { categoryId } = req.body
-        // get course for specified category
-        const selectedCategroy = await Categories.findById(categoryId).populate('courses').exec()
-        // validation
-        if (!selectedCategroy) {
+        console.log("PRINTING CATEGORY ID: ", categoryId);
+        // Get courses for the specified category
+        const selectedCategory = await categories.findById(categoryId)
+            .populate({
+                path: "courses",
+                match: { status: "Published" },
+                populate: "ratingAndReviews",
+            })
+            .exec()
+
+        //console.log("SELECTED COURSE", selectedCategory)
+        // Handle the case when the category is not found
+        if (!selectedCategory) {
+            console.log("Category not found.")
+            return res
+                .status(404)
+                .json({ success: false, message: "Category not found" })
+        }
+        // Handle the case when there are no courses
+        if (selectedCategory.courses.length === 0) {
+            console.log("No courses found for the selected category.")
             return res.status(404).json({
-                message: 'Category not found',
-                success: false
+                success: false,
+                message: "No courses found for the selected category.",
             })
         }
 
-        // getcourses for categories
-        const differentCategories = await Categories.find({ _id: { $ne: categoryId } }).populate('courses').exec()
-        // return res
+        // Get courses for other categories
+        const categoriesExceptSelected = await Category.find({
+            _id: { $ne: categoryId },
+        })
+        let differentCategory = await categories.findOne(
+            categoriesExceptSelected[getRandomInt(categoriesExceptSelected.length)]
+                ._id
+        )
+            .populate({
+                path: "courses",
+                match: { status: "Published" },
+            })
+            .exec()
+        //console.log("Different COURSE", differentCategory)
+        // Get top-selling courses across all categories
+        const allCategories = await categories.find()
+            .populate({
+                path: "courses",
+                match: { status: "Published" },
+                populate: {
+                    path: "instructor",
+                },
+            })
+            .exec()
+        const allCourses = allCategories.flatMap((category) => category.courses)
+        const mostSellingCourses = allCourses
+            .sort((a, b) => b.sold - a.sold)
+            .slice(0, 10)
+        // console.log("mostSellingCourses COURSE", mostSellingCourses)
         res.status(200).json({
-            message: 'Category details successfully returned',
-            data: selectedCategroy,
-            differentCategories,
-            success: true
+            success: true,
+            data: {
+                selectedCategory,
+                differentCategory,
+                mostSellingCourses,
+            },
         })
     } catch (error) {
-        res.status(500).json({
-            message: error.message
-
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message,
         })
     }
 }

@@ -1,31 +1,22 @@
-const mongoose = require('mongoose');
-const validator = require('validator');
-const profileSchema = mongoose.Schema({
+const mongoose = require("mongoose");
+
+// Define the Profile schema
+const profileSchema = new mongoose.Schema({
     gender: {
         type: String,
-        enum: ['Male', 'Female', 'Other'],
-
     },
     dateOfBirth: {
-        type: Date,
-        validate(value) {
-            if (value > new Date()) {
-                throw new Error('Invalid date of birth. Date of birth cannot be in the future')
-            }
-        }
+        type: String,
     },
     about: {
         type: String,
         trim: true,
     },
-    contactNo: {
-        type: String,
-        validate(value) {
-            if (!validator.isMobilePhone(value)) {
-                throw new Error('Invalid contact number. Must be a valid mobile phone number')
-            }
-        }
-    }
-})
+    contactNumber: {
+        type: Number,
+        trim: true,
+    },
+});
 
-module.exports = mongoose.model('Profile', profileSchema)
+// Export the Profile model
+module.exports = mongoose.model("Profile", profileSchema);

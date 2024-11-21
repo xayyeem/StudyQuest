@@ -1,27 +1,27 @@
-const mongoose = require('mongoose')
-const validator = require('validator')
-const ratingAndReview = mongoose.Schema({
+const mongoose = require("mongoose");
+
+// Define the RatingAndReview schema
+const ratingAndReviewSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+        required: true,
+        ref: "user",
     },
     rating: {
         type: Number,
-        required: true
+        required: true,
     },
     review: {
         type: String,
         required: true,
-        trim: true
     },
     course: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Course',
-        required: true
-    }
+        required: true,
+        ref: "Course",
+        index: true,
+    },
+});
 
-})
-
-
-module.exports = mongoose.model('RatingAndReview', ratingAndReview)
+// Export the RatingAndReview model
+module.exports = mongoose.model("RatingAndReview", ratingAndReviewSchema);

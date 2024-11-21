@@ -1,108 +1,147 @@
-const ratingAndReview = require('../model/ratingAndReview')
-const course = require('../model/Course')
+const RatingAndReview = require("../model/ratingAndReview");
+const Course = require("../model/Course");
+const { mongo, default: mongoose } = require("mongoose");
 
-// create rating 
+//createRating
 exports.createRating = async (req, res) => {
     try {
-        // fetch data from req body
-        const { rating, review, courseId } = req.body
-        // get user id
-        const { userId } = req.user.id
-        // check if user exist
-        const courseDetails = await course.findOne({ _id: courseId }, {
-            studentsEnrolled: { $elemMatch: { $eq: userId } }
-        })
-        if (!courseDetails) {
-            return res.status(404).json({ message: 'Course not found', success: false })
-        }
-        // check if user already review
-        const alreadyReviewed = await ratingAndReview.findOne({ user: userId, course: courseId })
-        if (alreadyReviewed) {
-            return res.json(403).json({
-                message: 'course is already reviewed by user',
-                success: false
-            })
-        }
-        // create rating
-        const ratingDetails = await ratingAndReview.create({
-            user: userId,
-            rating,
-            review
-        })
-        // update course model
-        const updateCourse = await course.findByIdAndUpdate(courseId, {
-            push: {
-                ratingAndReview: ratingDetails._id
-            }
-        }, { new: true })
-        console.log(updateCourse)
-        // return res
-        return res.status(200).json(
-            {
-                message: 'Rating created successfully',
-                ratingDetails,
-                success: true
-            }
-        )
 
-    } catch (error) {
-        return res.status(500).json({ message: error.message, success: false })
+        //get user id
+        const userId = req.user.id;
+        //fetchdata from req body
+        const { rating, review, courseId } = req.body;
+        //check if user is enrolled or not
+        const courseDetails = await Course.findOne(
+            {
+                _id: courseId,
+                studentsEnrolled: { $elemMatch: { $eq: userId } },
+            });
+
+        if (!courseDetails) {
+            return res.status(404).json({
+                success: false,
+                message: 'Student is not enrolled in the course',
+            });
+        }
+        //check if user already reviewed the course
+        const alreadyReviewed = await RatingAndReview.findOne({
+            user: userId,
+            course: courseId,
+        });
+        if (alreadyReviewed) {
+            return res.status(403).json({
+                success: false,
+                message: 'Course is already reviewed by the user',
+            });
+        }
+        //create rating and review
+        const ratingReview = await RatingAndReview.create({
+            rating, review,
+            course: courseId,
+            user: userId,
+        });
+
+        //update course with this rating/review
+        const updatedCourseDetails = await Course.findByIdAndUpdate({ _id: courseId },
+            {
+                $push: {
+                    ratingAndReviews: ratingReview._id,
+                }
+            },
+            { new: true });
+        console.log(updatedCourseDetails);
+        //return response
+        return res.status(200).json({
+            success: true,
+            message: "Rating and Review created Successfully",
+            ratingReview,
+        })
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        })
     }
 }
 
-// get average rating
-// mushkil 
+
+
+//getAverageRating
 exports.getAverageRating = async (req, res) => {
     try {
-        // get courseId
-        const { courseId } = req.body       //todo .courseId
-        // calculate average rating
-        const result = await ratingAndReview.aggregate([
+        //get course ID
+        const courseId = req.body.courseId;
+        //calculate avg rating
+
+        const result = await RatingAndReview.aggregate([
             {
                 $match: {
-                    course: new mongoose.Type.Schema.ObjectId(courseID)
+                    course: new mongoose.Types.ObjectId(courseId),
                 },
             },
             {
-                group: {
+                $group: {
                     _id: null,
-                    averageRating: { $avg: '$rating' }
+                    averageRating: { $avg: "$rating" },
                 }
             }
-
         ])
-        // return rating
+
+        //return rating
         if (result.length > 0) {
-            return res.status(200).json({ averageRating: result[0].averageRating, success: true })
+
+            return res.status(200).json({
+                success: true,
+                averageRating: result[0].averageRating,
+            })
+
         }
+
+        //if no rating/Review exist
         return res.status(200).json({
-            message: 'No rating found for this course',
-            success: false
+            success: true,
+            message: 'Average Rating is 0, no ratings given till now',
+            averageRating: 0,
         })
-
-
-    } catch (error) {
-        return res.status(500).json({ message: error.message, success: false })
-
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        })
     }
 }
 
 
-// get all rating
+//getAllRatingAndReviews
 
 exports.getAllRating = async (req, res) => {
     try {
-        const allReviews = await ratingAndReview.find({}).sort({ rating: -1 }).populate({ // check here
-            path: 'user',
-            select: 'firstName lastName email image'
-        }).populate({
-            path: 'course',
-            select: 'courseName'
-        }).exec()
-
-        return res.status(200).json({ message: 'all data fetch successfully ', data: allReviews, success: true })
-    } catch (error) {
-        return res.status(500).json({ message: error.message, success: false })
-
+        const allReviews = await RatingAndReview.find({})
+            .sort({ rating: "desc" })
+            .populate({
+                path: "user",
+                select: "firstName lastName email image",
+            })
+            .populate({
+                path: "course",
+                select: "courseName",
+            })
+            .exec();
+        return res.status(200).json({
+            success: true,
+            message: "All reviews fetched successfully",
+            data: allReviews,
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        })
     }
 }
