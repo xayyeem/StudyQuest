@@ -1,68 +1,60 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const ProfileRoutes = require('./route/Profile');
-const PaymentRoutes = require('./route/Payment');
-const CourseRoutes = require('./route/Course');
-const UserRoutes = require('./route/user');
-require('dotenv').config();
-const { dbConnect } = require('./config/database');
-const cookieParser = require('cookie-parser');
-const { cloudConnect } = require('./config/fileUpload');
-const fileUpload = require('express-fileupload');
-const cors = require('cors');
-
+const express = require("express");
 const app = express();
 
-// Port 
+const userRoutes = require("./route/user");
+const profileRoutes = require("./route/Profile");
+const paymentRoutes = require("./route/Payment");
+const courseRoutes = require("./route/Course");
+// const contactUsRoute = require("./route/Contact");
+const { dbConnect } = require("./config/database");
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
+const { cloudConnect } = require("./config/fileUpload");
+const fileUpload = require("express-fileupload");
+const dotenv = require("dotenv");
+
+dotenv.config();
 const PORT = process.env.PORT || 4000;
 
-// Database connection
-dbConnect();
+//database connect
 
-// Middleware
+dbConnect()
+
+//middlewares
 app.use(express.json());
-app.use(fileUpload({
-    useTempFiles: true,
-    tempFileDir: './temp/',
-    createParentPath: true,
-}));
 app.use(cookieParser());
+app.use(
+    cors({
+        origin: "http://localhost:3000",
+        credentials: true,
+    })
+)
 
-// CORS Configuration
-app.use(cors({
-    origin: process.env.NODE_ENV === 'production' ? 'https://your-production-url.com' : /http:\/\/localhost:\d+/,
-    credentials: true
-}));
-
-// Cloudinary connection
+app.use(
+    fileUpload({
+        useTempFiles: true,
+        tempFileDir: "/tmp",
+    })
+)
+//cloudinary connection
 cloudConnect();
 
-// Route mounting
-app.use('/api/v1/auth', UserRoutes);
-app.use('/api/v1/payment', PaymentRoutes);
-app.use('/api/v1/courses', CourseRoutes);
-app.use('/api/v1/profile', ProfileRoutes);
+//routes
+app.use("/api/v1/auth", userRoutes);
+app.use("/api/v1/profile", profileRoutes);
+app.use("/api/v1/course", courseRoutes);
+app.use("/api/v1/payment", paymentRoutes);
+// app.use("/api/v1/reach", contactUsRoute);
 
-// Root route
-app.get('/', (req, res) => {
+//def route
+
+app.get("/", (req, res) => {
     return res.json({
-        message: 'Server is up and running'
-    });
-});
-
-// Error handling
-app.use((req, res, next) => {
-    const error = new Error('Not Found');
-    error.status = 404;
-    next(error);
-});
-
-app.use((error, req, res, next) => {
-    res.status(error.status || 500).json({
-        message: error.message,
+        success: true,
+        message: 'Your server is up and running....'
     });
 });
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+    console.log(`App is running at ${PORT}`)
+})
