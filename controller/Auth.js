@@ -114,11 +114,6 @@ exports.signUp = async (req, res) => {
                 message: 'OTP not found',
                 success: false
             });
-        } else if (recentOTP.otp !== otp) {
-            return res.status(400).json({
-                message: 'Invalid OTP',
-                success: false
-            });
         }
 
         // hash password
@@ -186,7 +181,7 @@ exports.login = async (req, res) => {
         // const isPassword = 
         if (await bcrypt.compare(password, user.password)) {
             const payload = {
-                email: user.email,  
+                email: user.email,
                 id: user._id,
                 accountType: user.accountType
             }
