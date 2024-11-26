@@ -16,46 +16,60 @@ exports.updateProfile = async (req, res) => {
             about = "",
             contactNumber = "",
             gender = "",
-        } = req.body
-        const id = req.user.id
+        } = req.body;
 
-        // Find the profile by id
-        const userDetails = await User.findById(id)
-        const profile = await Profile.findById(userDetails.additionalDetails)
+        const userId = req.user.id;
 
-        const user = await User.findByIdAndUpdate(id, {
-            firstName,
-            lastName,
-        })
-        await user.save()
+        // Retrieve the user and associated profile details
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
 
-        // Update the profile fields
-        profile.dateOfBirth = dateOfBirth
-        profile.about = about
-        profile.contactNumber = contactNumber
-        profile.gender = gender
+        const profile = await Profile.findById(user.additionalDetails);
+        if (!profile) {
+            return res.status(404).json({
+                success: false,
+                message: "Profile not found",
+            });
+        }
 
-        // Save the updated profile
-        await profile.save()
+        // Update user details
+        user.firstName = firstName || user.firstName;
+        user.lastName = lastName || user.lastName;
+        await user.save();
 
-        // Find the updated user details
-        const updatedUserDetails = await User.findById(id)
+        // Update profile details
+        profile.dateOfBirth = dateOfBirth || profile.dateOfBirth;
+        profile.about = about || profile.about;
+        profile.contactNumber = contactNumber || profile.contactNumber;
+        profile.gender = gender || profile.gender;
+        await profile.save();
+
+        // Retrieve updated user details with the populated profile
+        const updatedUserDetails = await User.findById(userId)
             .populate("additionalDetails")
-            .exec()
+            .exec();
 
-        return res.json({
+        // Send a success response
+        return res.status(200).json({
             success: true,
             message: "Profile updated successfully",
             updatedUserDetails,
-        })
+        });
     } catch (error) {
-        console.log(error)
+        console.error("Error updating profile:", error.message);
         return res.status(500).json({
             success: false,
+            message: "An error occurred while updating the profile",
             error: error.message,
-        })
+        });
     }
-}
+};
+
 
 exports.deleteAccount = async (req, res) => {
     try {
