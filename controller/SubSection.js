@@ -7,7 +7,7 @@ const { uploadImageToCloudinary } = require("../utils/imageUpload")
 exports.createSubSection = async (req, res) => {
     try {
         // Extract necessary information from the request body
-        const { sectionId, title, description } = req.body
+        const { sectionId, title, description, timeDuration } = req.body
         const video = req.files.video
 
         // Check if all necessary fields are provided
@@ -37,7 +37,7 @@ exports.createSubSection = async (req, res) => {
             { _id: sectionId },
             { $push: { subSection: SubSectionDetails._id } },
             { new: true }
-        ).populate("subSection")
+        ).populate("subSection").select("-password")
 
         // Return the updated section in the response
         return res.status(200).json({ success: true, data: updatedSection })

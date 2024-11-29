@@ -25,13 +25,6 @@ exports.createCourse = async (req, res) => {
         // Get thumbnail image from request files
         const thumbnail = req.files.thumbnailImage;
 
-        // Convert the tag and instructions from stringified Array to Array
-        // const tag = JSON.parse(_tag)
-        // const instructions = JSON.parse(_instructions)
-
-        // console.log("tag", tag)
-        // console.log("instructions", instructions)
-
         // Check if any of the required fields are missing
         if (
             !courseName ||
@@ -40,7 +33,7 @@ exports.createCourse = async (req, res) => {
             !price ||
             !thumbnail ||
             !category
-        ) { // Removed the trailing comma
+        ) {
             return res.status(400).json({
                 success: false,
                 message: "All Fields are Mandatory",
@@ -139,31 +132,39 @@ exports.showAllCourses = async (req, res) => {
 
 exports.getCourseDetails = async (req, res) => {
     try {
-        // fetch course details
-        const { courseId } = req.body
-        // find course details using populate
-        const courseDetails = await Course.findById(courseId).populate({
-            path: 'instructor',
-            populate: {
-                path: 'additionalDetails'
-            }
-        }).populate('Categories').populate('RatingAndReview').populate({
-            path: 'courseContent',
-            populate: {
-                path: 'SubSection'
-            }
-        }).exec()
-        // validations 
+        // Get courseId from request parameters
+        const { courseId } = req.params;
+
+        // Find course details using populate
+        const courseDetails = await Course.findById(courseId)
+            .populate({
+                path: 'instructor',
+                populate: { path: 'additionalDetails' }
+            })
+            .populate('category')
+            .select("-password") // Exclude password if applicable
+            .setOptions({ strictPopulate: false })
+            .exec();
+
+        // Validations
         if (!courseDetails) {
-            return res.status(404).json({ message: 'Course not found', success: false })
+            return res.status(404).json({
+                message: 'Course not found',
+                success: false
+            });
         }
+
+        // Send a success response
         return res.status(200).json({
             message: 'Course details retrieved successfully',
             success: true,
             data: courseDetails
-        })
-        // return res
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message, success: false })
+        // Handle errors
+        res.status(500).json({
+            message: error.message,
+            success: false
+        });
     }
-}
+};

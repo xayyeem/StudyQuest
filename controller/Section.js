@@ -33,7 +33,7 @@ exports.createSection = async (req, res) => {
                 populate: {
                     path: "subSection",
                 },
-            })
+            }).select("-password")
             .exec();
 
         // Return the updated course object in the response
@@ -68,7 +68,7 @@ exports.updateSection = async (req, res) => {
                 populate: {
                     path: "subSection",
                 },
-            })
+            }).select("-password")
             .exec();
 
         res.status(200).json({
@@ -115,7 +115,7 @@ exports.deleteSection = async (req, res) => {
             populate: {
                 path: "subSection"
             }
-        })
+        }).select("-password")
             .exec();
 
         res.status(200).json({

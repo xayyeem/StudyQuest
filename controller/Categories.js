@@ -57,7 +57,7 @@ exports.categoryPageDetails = async (req, res) => {
                 path: "courses",
                 match: { status: "Published" },
                 populate: "ratingAndReviews",
-            })
+            }).select('-password') // exclude password fields 
             .exec()
 
         //console.log("SELECTED COURSE", selectedCategory)

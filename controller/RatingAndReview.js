@@ -125,11 +125,11 @@ exports.getAllRating = async (req, res) => {
             .populate({
                 path: "user",
                 select: "firstName lastName email image",
-            })
+            }).select("-password")
             .populate({
                 path: "course",
                 select: "courseName",
-            })
+            }).select("-password")
             .exec();
         return res.status(200).json({
             success: true,
